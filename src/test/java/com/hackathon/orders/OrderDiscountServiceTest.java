@@ -22,9 +22,11 @@ class OrderDiscountServiceTest {
 
     @ParameterizedTest
     @CsvSource({
+            "DIAMOND,1000,false,750.00",
             "PLATINUM,1000,false,800.00",
             "GOLD,1000,false,850.00",
             "SILVER,1000,false,900.00",
+            "DIAMOND,1000,true,700.00",
             "GOLD,1000,true,800.00",
             "SILVER,999.99,true,899.99"
     })

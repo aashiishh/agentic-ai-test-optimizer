@@ -123,8 +123,10 @@ def get_changed_class_names(base_ref):
     if base_ref and not set(base_ref) == {"0"}:
         commands.append(["git", "diff", "--name-only", f"{base_ref}...HEAD"])
         commands.append(["git", "diff", "--name-only", base_ref, "HEAD"])
+        commands.append(["git", "diff", "--name-only", base_ref])
 
     commands.append(["git", "diff", "--name-only", "HEAD~1", "HEAD"])
+    commands.append(["git", "diff", "--name-only"])
 
     for command in commands:
         try:
