@@ -94,8 +94,11 @@ Run the repeatable manual AI agent flow:
 
 ```bash
 python3 scripts/ai_test_agent.py --mode manual --phase prepare
+python3 scripts/github_summary.py
 python3 scripts/ai_test_agent.py --mode manual --phase verify
 ```
+
+The GitHub workflow publishes `ai-test-reports/github-actions-summary.md` to the Actions summary. On pull requests, the same summary is posted as a PR comment so reviewers can see the selected AI target and coverage numbers without downloading artifacts first.
 
 Optional strict 80 percent coverage gate. In the current baseline this may fail, which is useful for the demo because the future AI agent should raise coverage above this threshold:
 

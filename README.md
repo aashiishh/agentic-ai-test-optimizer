@@ -33,6 +33,7 @@ This demonstrates the before/after workflow that will later be automated through
 python3 scripts/coverage_summary.py
 python3 scripts/ai_test_agent_dry_run.py
 python3 scripts/ai_test_agent.py --mode manual --phase prepare
+python3 scripts/github_summary.py
 ./mvnw verify -Pcoverage-check
 ```
 
@@ -76,6 +77,8 @@ After adding the generated tests, verify coverage improvement:
 ```bash
 python3 scripts/ai_test_agent.py --mode manual --phase verify
 ```
+
+The CI workflow also generates `ai-test-reports/github-actions-summary.md`, which appears directly in the GitHub Actions run summary and can be posted as a PR comment.
 
 ## Documentation
 

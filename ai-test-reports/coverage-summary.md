@@ -4,9 +4,9 @@ This report is generated from JaCoCo coverage data. It can be used for baseline 
 
 ## Coverage Summary
 
-- Line coverage: 89.74%
+- Line coverage: 90.24%
 - Branch coverage: 100.00%
-- Instruction coverage: 92.00%
+- Instruction coverage: 92.45%
 
 ## Weakest Classes
 

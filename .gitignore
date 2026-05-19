@@ -7,5 +7,6 @@ Program.cs
 ai-test-reports/*.pdf
 ai-test-reports/*.html
 ai-test-reports/manual-agent-before.json
+ai-test-reports/github-actions-summary.md
 ai-test-reports/manual-agent-instructions.md
 ai-test-reports/manual-agent-result.md
