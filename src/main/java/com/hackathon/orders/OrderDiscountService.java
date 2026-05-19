@@ -15,7 +15,9 @@ public class OrderDiscountService {
 
         BigDecimal discount = BigDecimal.ZERO;
 
-        if ("PLATINUM".equalsIgnoreCase(customerTier)) {
+        if ("DIAMOND".equalsIgnoreCase(customerTier)) {
+            discount = new BigDecimal("0.25");
+        } else if ("PLATINUM".equalsIgnoreCase(customerTier)) {
             discount = new BigDecimal("0.20");
         } else if ("GOLD".equalsIgnoreCase(customerTier)) {
             discount = new BigDecimal("0.15");
