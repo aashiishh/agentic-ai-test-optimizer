@@ -1,8 +1,14 @@
 #!/usr/bin/env python3
 import json
 import os
+import ssl
 import urllib.error
 import urllib.request
+
+try:
+    import certifi
+except ImportError:
+    certifi = None
 
 
 DEFAULT_BASE_URL = "https://api.openai.com/v1"
@@ -48,8 +54,11 @@ def chat_completion(prompt):
         method="POST",
     )
 
+    cafile = certifi.where() if certifi else None
+    ssl_context = ssl.create_default_context(cafile=cafile)
+
     try:
-        with urllib.request.urlopen(request, timeout=90) as response:
+        with urllib.request.urlopen(request, timeout=90, context=ssl_context) as response:
             response_body = response.read().decode("utf-8")
     except urllib.error.HTTPError as error:
         error_body = error.read().decode("utf-8", errors="replace")
