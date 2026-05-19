@@ -17,46 +17,49 @@ Generate or improve JUnit 5 tests for the target class so that line and branch c
 
 ## Current Coverage
 
-- Target class: `com.hackathon.orders.OrderDiscountService`
-- Line coverage: 64.29%
-- Branch coverage: 42.86%
-- Source path: `src/main/java/com/hackathon/orders/OrderDiscountService.java`
-- Test path: `src/test/java/com/hackathon/orders/OrderDiscountServiceTest.java`
+- Target class: `com.aws_lambda.service.AWSLambdaService`
+- Line coverage: 69.23%
+- Branch coverage: N/A
+- Source path: `src/main/java/com/aws_lambda/service/AWSLambdaService.java`
+- Test path: `src/test/java/com/aws_lambda/service/AWSLambdaServiceTest.java`
 
 ## Source Code
 
 ```java
-package com.hackathon.orders;
+package com.aws_lambda.service;
 
 import org.springframework.stereotype.Service;
 
-import java.math.BigDecimal;
-import java.math.RoundingMode;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.lambda.LambdaClient;
+import software.amazon.awssdk.services.lambda.model.InvokeRequest;
+import software.amazon.awssdk.services.lambda.model.InvokeResponse;
+
+import java.nio.charset.StandardCharsets;
+import java.util.function.Function;
 
 @Service
-public class OrderDiscountService {
+public class AWSLambdaService {
 
-    public BigDecimal calculateFinalAmount(BigDecimal orderAmount, String customerTier, boolean couponApplied) {
-        if (orderAmount == null || orderAmount.signum() < 0) {
-            throw new IllegalArgumentException("Order amount must be zero or positive");
-        }
+    private final Function<InvokeRequest, InvokeResponse> lambdaInvoker;
 
-        BigDecimal discount = BigDecimal.ZERO;
+    public AWSLambdaService() {
+        LambdaClient lambdaClient = LambdaClient.create();
+        this.lambdaInvoker = lambdaClient::invoke;
+    }
 
-        if ("PLATINUM".equalsIgnoreCase(customerTier)) {
-            discount = new BigDecimal("0.20");
-        } else if ("GOLD".equalsIgnoreCase(customerTier)) {
-            discount = new BigDecimal("0.15");
-        } else if ("SILVER".equalsIgnoreCase(customerTier)) {
-            discount = new BigDecimal("0.10");
-        }
+    protected AWSLambdaService(Function<InvokeRequest, InvokeResponse> lambdaInvoker) {
+        this.lambdaInvoker = lambdaInvoker;
+    }
 
-        if (couponApplied && orderAmount.compareTo(new BigDecimal("1000")) >= 0) {
-            discount = discount.add(new BigDecimal("0.05"));
-        }
+    public String invokeLambda(String functionName, String input) {
+        InvokeRequest request = InvokeRequest.builder()
+                .functionName(functionName)
+                .payload(SdkBytes.fromUtf8String("\"" + input + "\""))
+                .build();
 
-        BigDecimal payableAmount = orderAmount.subtract(orderAmount.multiply(discount));
-        return payableAmount.setScale(2, RoundingMode.HALF_UP);
+        InvokeResponse response = lambdaInvoker.apply(request);
+        return StandardCharsets.UTF_8.decode(response.payload().asByteBuffer()).toString();
     }
 }
 
@@ -65,23 +68,37 @@ public class OrderDiscountService {
 ## Existing Test Code
 
 ```java
-package com.hackathon.orders;
+package com.aws_lambda.service;
 
 import org.junit.jupiter.api.Test;
-
-import java.math.BigDecimal;
+import software.amazon.awssdk.core.SdkBytes;
+import software.amazon.awssdk.services.lambda.model.InvokeRequest;
+import software.amazon.awssdk.services.lambda.model.InvokeResponse;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 
-class OrderDiscountServiceTest {
-
-    private final OrderDiscountService service = new OrderDiscountService();
+class AWSLambdaServiceTest {
 
     @Test
-    void calculateFinalAmountReturnsOriginalAmountForRegularCustomerWithoutCoupon() {
-        BigDecimal finalAmount = service.calculateFinalAmount(new BigDecimal("500"), "REGULAR", false);
+    void invokeLambdaReturnsDecodedPayload() {
+        CapturingInvoker invoker = new CapturingInvoker();
 
-        assertEquals(new BigDecimal("500.00"), finalAmount);
+        String response = new AWSLambdaService(invoker::invoke).invokeLambda("test-function", "hello");
+
+        assertEquals("\"ok\"", response);
+        assertEquals("test-function", invoker.request.functionName());
+        assertEquals("\"hello\"", invoker.request.payload().asUtf8String());
+    }
+
+    private static class CapturingInvoker {
+        private InvokeRequest request;
+
+        InvokeResponse invoke(InvokeRequest request) {
+            this.request = request;
+            return InvokeResponse.builder()
+                    .payload(SdkBytes.fromUtf8String("\"ok\""))
+                    .build();
+        }
     }
 }
 

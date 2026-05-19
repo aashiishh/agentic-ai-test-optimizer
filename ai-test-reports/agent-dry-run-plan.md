@@ -4,11 +4,11 @@ This dry run does not call an LLM API. It prepares the target context that will 
 
 ## Selected Target
 
-- Class: `com.hackathon.orders.OrderDiscountService`
-- Source: `src/main/java/com/hackathon/orders/OrderDiscountService.java`
-- Test: `src/test/java/com/hackathon/orders/OrderDiscountServiceTest.java`
-- Line coverage: 64.29%
-- Branch coverage: 42.86%
+- Class: `com.aws_lambda.service.AWSLambdaService`
+- Source: `src/main/java/com/aws_lambda/service/AWSLambdaService.java`
+- Test: `src/test/java/com/aws_lambda/service/AWSLambdaServiceTest.java`
+- Line coverage: 69.23%
+- Branch coverage: N/A
 
 ## Next Automated Phase
 

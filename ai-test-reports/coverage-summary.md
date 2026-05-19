@@ -1,20 +1,20 @@
 # AI Test Coverage Report
 
-This baseline report is generated without an LLM API key. The next phase will compare this baseline with AI-generated tests.
+This report is generated from JaCoCo coverage data. It can be used for baseline or after-test-generation comparisons.
 
 ## Coverage Summary
 
-- Line coverage: 74.29%
-- Branch coverage: 42.86%
-- Instruction coverage: 64.96%
+- Line coverage: 88.57%
+- Branch coverage: 100.00%
+- Instruction coverage: 91.24%
 
 ## Weakest Classes
 
 | Class | Line Coverage | Branch Coverage |
 | --- | ---: | ---: |
-| `com.hackathon.orders.OrderDiscountService` | 64.29% | 42.86% |
 | `com.aws_lambda.service.AWSLambdaService` | 69.23% | N/A |
 | `com.aws_lambda.LambdaHandler` | 100.00% | N/A |
+| `com.hackathon.orders.OrderDiscountService` | 100.00% | 100.00% |
 | `com.aws_lambda.controller.LambdaController` | 100.00% | N/A |
 
 ## Next Agent Step

@@ -11,13 +11,20 @@ The current version proves the no-cost foundation before any OpenAI or AWS Bedro
 - prepares a dry-run LLM prompt for future AI-generated tests
 - uploads reports through GitHub Actions
 
-## Current Baseline
+## Coverage Improvement Demo
+
+Initial baseline:
 
 - Line coverage: 74.29%
 - Branch coverage: 42.86%
-- Weakest class: `com.hackathon.orders.OrderDiscountService`
 
-This intentional coverage gap gives the future AI agent a clear before/after improvement target.
+After manual AI-mode test generation:
+
+- Line coverage: 88.57%
+- Branch coverage: 100.00%
+- Improved class: `com.hackathon.orders.OrderDiscountService`
+
+This demonstrates the before/after workflow that will later be automated through an LLM API.
 
 ## Local Verification
 
@@ -25,6 +32,7 @@ This intentional coverage gap gives the future AI agent a clear before/after imp
 ./mvnw test
 python3 scripts/coverage_summary.py
 python3 scripts/ai_test_agent_dry_run.py
+./mvnw verify -Pcoverage-check
 ```
 
 ## Documentation

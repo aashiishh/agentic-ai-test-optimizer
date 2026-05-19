@@ -36,7 +36,5 @@ jobs:
         with:
           name: coverage-baseline-report
           path: |
-            ai-test-reports/coverage-summary.md
-            ai-test-reports/agent-dry-run-plan.md
-            ai-test-reports/llm-test-generation-prompt.md
+            ai-test-reports/*.md
             target/site/jacoco/

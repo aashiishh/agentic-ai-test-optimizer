@@ -98,4 +98,6 @@ Optional strict 80 percent coverage gate. In the current baseline this may fail,
 
 ## Next Milestone
 
-After this baseline works in GitHub Actions, add the AI test agent with a provider interface. The first provider can be OpenAI API, AWS Bedrock, or a manual prompt mode for demos.
+The manual AI-mode flow is now proven: the dry-run prompt identified a weak class, additional JUnit tests were added, and the project passed the strict 80 percent coverage gate.
+
+Next, add the AI test agent provider interface. The first provider can be OpenAI API, AWS Bedrock, or a manual prompt mode for demos.

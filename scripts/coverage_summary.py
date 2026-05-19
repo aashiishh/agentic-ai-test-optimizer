@@ -62,7 +62,7 @@ def main():
     content = [
         "# AI Test Coverage Report",
         "",
-        "This baseline report is generated without an LLM API key. The next phase will compare this baseline with AI-generated tests.",
+        "This report is generated from JaCoCo coverage data. It can be used for baseline or after-test-generation comparisons.",
         "",
         "## Coverage Summary",
         "",
