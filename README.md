@@ -36,6 +36,33 @@ python3 scripts/ai_test_agent.py --mode manual --phase prepare
 ./mvnw verify -Pcoverage-check
 ```
 
+## Run The Local Demo App
+
+Start the Spring Boot app:
+
+```bash
+./mvnw spring-boot:run
+```
+
+Try the order discount endpoint:
+
+```bash
+curl "http://localhost:8080/orders/discount?amount=1000&tier=PLATINUM&coupon=true"
+```
+
+Expected response:
+
+```text
+750.00
+```
+
+More examples:
+
+```bash
+curl "http://localhost:8080/orders/discount?amount=1000&tier=GOLD&coupon=false"
+curl "http://localhost:8080/orders/discount?amount=999.99&tier=SILVER&coupon=true"
+```
+
 ## Manual AI Agent Mode
 
 Prepare the prompt for ChatGPT Pro:

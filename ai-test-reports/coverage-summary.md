@@ -4,9 +4,9 @@ This report is generated from JaCoCo coverage data. It can be used for baseline 
 
 ## Coverage Summary
 
-- Line coverage: 88.57%
+- Line coverage: 89.74%
 - Branch coverage: 100.00%
-- Instruction coverage: 91.24%
+- Instruction coverage: 92.00%
 
 ## Weakest Classes
 
@@ -14,6 +14,7 @@ This report is generated from JaCoCo coverage data. It can be used for baseline 
 | --- | ---: | ---: |
 | `com.aws_lambda.service.AWSLambdaService` | 69.23% | N/A |
 | `com.aws_lambda.LambdaHandler` | 100.00% | N/A |
+| `com.hackathon.orders.OrderDiscountController` | 100.00% | N/A |
 | `com.hackathon.orders.OrderDiscountService` | 100.00% | 100.00% |
 | `com.aws_lambda.controller.LambdaController` | 100.00% | N/A |
 
