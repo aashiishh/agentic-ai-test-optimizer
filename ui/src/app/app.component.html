@@ -1,0 +1,71 @@
+<main class="page-shell">
+  <header class="topbar">
+    <div>
+      <p class="eyebrow">Hackathon MVP</p>
+      <h1>Agentic AI Test Optimizer</h1>
+    </div>
+    <button type="button" class="refresh-button" (click)="refresh()">Refresh</button>
+  </header>
+
+  <section class="status-strip" *ngIf="dashboard() as data">
+    <article class="metric" *ngFor="let item of data.overview">
+      <span>{{ item.label }}</span>
+      <strong>{{ item.value }}</strong>
+      <small>{{ item.detail }}</small>
+    </article>
+  </section>
+
+  <p class="error" *ngIf="error()">{{ error() }}</p>
+  <p class="loading" *ngIf="loading()">Loading reports...</p>
+
+  <section class="workspace" *ngIf="dashboard() as data">
+    <aside class="report-list" aria-label="Available reports">
+      <button
+        type="button"
+        class="report-item"
+        *ngFor="let report of data.reports"
+        [class.active]="selectedReportId() === report.id"
+        [class.missing]="!report.available"
+        (click)="selectReport(report)"
+      >
+        <span>{{ report.type }}</span>
+        <strong>{{ report.title }}</strong>
+        <small>{{ report.available ? report.path : 'Not generated yet' }}</small>
+      </button>
+    </aside>
+
+    <article class="report-viewer" *ngIf="selectedReport() as report">
+      <div class="report-header">
+        <div>
+          <p class="eyebrow">{{ report.type }}</p>
+          <h2>{{ report.title }}</h2>
+        </div>
+        <span class="availability" [class.ready]="report.available">
+          {{ report.available ? 'Available' : 'Pending' }}
+        </span>
+      </div>
+
+      <div class="mini-metrics" *ngIf="report.metrics.length">
+        <div class="mini-metric" *ngFor="let metric of report.metrics">
+          <span>{{ metric.label }}</span>
+          <strong>{{ metric.value }}</strong>
+        </div>
+      </div>
+
+      <pre class="report-content" *ngIf="report.available; else missingReport">{{ report.content }}</pre>
+      <ng-template #missingReport>
+        <div class="empty-state">
+          <h3>Report not generated yet</h3>
+          <p>Run the matching agent step and refresh this dashboard.</p>
+        </div>
+      </ng-template>
+    </article>
+  </section>
+
+  <section class="highlights" *ngIf="dashboard() as data">
+    <h2>Implementation Notes</h2>
+    <ul>
+      <li *ngFor="let highlight of data.highlights">{{ highlight }}</li>
+    </ul>
+  </section>
+</main>

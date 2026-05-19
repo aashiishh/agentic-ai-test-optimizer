@@ -64,6 +64,32 @@ curl "http://localhost:8080/orders/discount?amount=1000&tier=GOLD&coupon=false"
 curl "http://localhost:8080/orders/discount?amount=999.99&tier=SILVER&coupon=true"
 ```
 
+## Run The Angular Reports UI
+
+The UI reads report data from the Spring Boot API at `/api/reports`.
+
+Start the backend first:
+
+```bash
+./mvnw spring-boot:run
+```
+
+In another terminal, start the Angular UI:
+
+```bash
+cd ui
+npm install
+npm start
+```
+
+Open:
+
+```text
+http://localhost:4200
+```
+
+The dashboard shows coverage metrics, generated LLM suggestions, manual before/after comparison, and agent planning reports.
+
 ## Manual AI Agent Mode
 
 Prepare the prompt for ChatGPT Pro:

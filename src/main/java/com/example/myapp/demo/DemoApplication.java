@@ -5,7 +5,8 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 
 @SpringBootApplication(scanBasePackages = {
 		"com.example.myapp.demo",
-		"com.hackathon.orders"
+		"com.hackathon.orders",
+		"com.hackathon.reports"
 })
 public class DemoApplication {
 
