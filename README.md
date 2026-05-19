@@ -32,7 +32,22 @@ This demonstrates the before/after workflow that will later be automated through
 ./mvnw test
 python3 scripts/coverage_summary.py
 python3 scripts/ai_test_agent_dry_run.py
+python3 scripts/ai_test_agent.py --mode manual --phase prepare
 ./mvnw verify -Pcoverage-check
+```
+
+## Manual AI Agent Mode
+
+Prepare the prompt for ChatGPT Pro:
+
+```bash
+python3 scripts/ai_test_agent.py --mode manual --phase prepare
+```
+
+After adding the generated tests, verify coverage improvement:
+
+```bash
+python3 scripts/ai_test_agent.py --mode manual --phase verify
 ```
 
 ## Documentation

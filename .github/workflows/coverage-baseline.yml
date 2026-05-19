@@ -25,11 +25,8 @@ jobs:
       - name: Run tests and JaCoCo report
         run: ./mvnw test
 
-      - name: Generate baseline coverage summary
-        run: python3 scripts/coverage_summary.py
-
-      - name: Run AI test agent dry run
-        run: python3 scripts/ai_test_agent_dry_run.py
+      - name: Run manual AI agent prepare phase
+        run: python3 scripts/ai_test_agent.py --mode manual --phase prepare
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
@@ -37,4 +34,5 @@ jobs:
           name: coverage-baseline-report
           path: |
             ai-test-reports/*.md
+            ai-test-reports/*.json
             target/site/jacoco/

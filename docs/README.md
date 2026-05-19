@@ -90,6 +90,13 @@ Generate the no-cost AI agent dry run:
 python3 scripts/ai_test_agent_dry_run.py
 ```
 
+Run the repeatable manual AI agent flow:
+
+```bash
+python3 scripts/ai_test_agent.py --mode manual --phase prepare
+python3 scripts/ai_test_agent.py --mode manual --phase verify
+```
+
 Optional strict 80 percent coverage gate. In the current baseline this may fail, which is useful for the demo because the future AI agent should raise coverage above this threshold:
 
 ```bash
@@ -100,4 +107,4 @@ Optional strict 80 percent coverage gate. In the current baseline this may fail,
 
 The manual AI-mode flow is now proven: the dry-run prompt identified a weak class, additional JUnit tests were added, and the project passed the strict 80 percent coverage gate.
 
-Next, add the AI test agent provider interface. The first provider can be OpenAI API, AWS Bedrock, or a manual prompt mode for demos.
+Next, add the AI test agent provider interface. The first paid provider can be OpenAI API or AWS Bedrock, while the current manual provider keeps the same workflow available with ChatGPT Pro.
