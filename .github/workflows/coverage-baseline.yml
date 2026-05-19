@@ -7,6 +7,11 @@ on:
       - master
   pull_request:
 
+permissions:
+  contents: read
+  issues: write
+  pull-requests: write
+
 jobs:
   coverage:
     runs-on: ubuntu-latest
@@ -46,16 +51,21 @@ jobs:
       - name: Comment summary on pull request
         if: github.event_name == 'pull_request'
         uses: actions/github-script@v7
+        continue-on-error: true
         with:
           script: |
             const fs = require('fs');
             const body = fs.readFileSync('ai-test-reports/github-actions-summary.md', 'utf8');
-            await github.rest.issues.createComment({
-              owner: context.repo.owner,
-              repo: context.repo.repo,
-              issue_number: context.issue.number,
-              body
-            });
+            try {
+              await github.rest.issues.createComment({
+                owner: context.repo.owner,
+                repo: context.repo.repo,
+                issue_number: context.issue.number,
+                body
+              });
+            } catch (error) {
+              core.warning(`Could not post PR comment: ${error.message}`);
+            }
 
       - name: Upload coverage artifacts
         uses: actions/upload-artifact@v4
