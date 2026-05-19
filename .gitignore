@@ -1,0 +1,8 @@
+target/
+.idea/
+.vscode/
+*.iml
+.DS_Store
+Program.cs
+ai-test-reports/*.pdf
+ai-test-reports/*.html

@@ -1,0 +1,42 @@
+name: Coverage Baseline
+
+on:
+  push:
+    branches:
+      - main
+      - master
+  pull_request:
+
+jobs:
+  coverage:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: "21"
+          cache: maven
+
+      - name: Run tests and JaCoCo report
+        run: ./mvnw test
+
+      - name: Generate baseline coverage summary
+        run: python3 scripts/coverage_summary.py
+
+      - name: Run AI test agent dry run
+        run: python3 scripts/ai_test_agent_dry_run.py
+
+      - name: Upload coverage artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: coverage-baseline-report
+          path: |
+            ai-test-reports/coverage-summary.md
+            ai-test-reports/agent-dry-run-plan.md
+            ai-test-reports/llm-test-generation-prompt.md
+            target/site/jacoco/
