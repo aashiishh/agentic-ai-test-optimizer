@@ -86,6 +86,24 @@ python3 scripts/ai_test_agent.py --mode manual --phase verify
 
 The CI workflow also generates `ai-test-reports/github-actions-summary.md`, which appears directly in the GitHub Actions run summary and can be posted as a PR comment.
 
+## LLM Suggest-Only Mode
+
+This mode calls an OpenAI-compatible chat completions API and writes recommendations to `ai-test-reports/llm-test-suggestions.md`. It does not change source code or test code automatically.
+
+Required from your side:
+
+- `LLM_API_KEY`: API key from the selected provider
+- `LLM_MODEL`: model name to use, optional because the script has a default
+- `LLM_BASE_URL`: API base URL, optional for OpenAI because the script has a default
+
+Run:
+
+```bash
+export LLM_API_KEY="your-api-key"
+export LLM_MODEL="gpt-4o-mini"
+python3 scripts/ai_test_agent.py --mode llm --phase suggest --scope changed --base-ref HEAD~1
+```
+
 ## Documentation
 
 See [docs/README.md](docs/README.md) for architecture diagrams, CI flow, and the future AI agent workflow.

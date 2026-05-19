@@ -6,6 +6,8 @@ import subprocess
 import sys
 from pathlib import Path
 
+from llm_client import chat_completion
+
 
 JACOCO_CSV = Path("target/site/jacoco/jacoco.csv")
 REPORT_DIR = Path("ai-test-reports")
@@ -13,6 +15,7 @@ PROMPT_FILE = REPORT_DIR / "llm-test-generation-prompt.md"
 INSTRUCTIONS_FILE = REPORT_DIR / "manual-agent-instructions.md"
 RESULT_FILE = REPORT_DIR / "manual-agent-result.md"
 SNAPSHOT_FILE = REPORT_DIR / "manual-agent-before.json"
+LLM_SUGGESTIONS_FILE = REPORT_DIR / "llm-test-suggestions.md"
 
 
 def ratio(covered, missed):
@@ -205,6 +208,22 @@ Generate or improve JUnit 5 tests for the target class so that line and branch c
 """
 
 
+def build_suggestion_prompt(target):
+    return f"""{build_prompt(target)}
+
+## Output Format
+
+Return Markdown with these sections:
+
+1. Coverage Gaps
+2. Recommended Test Cases
+3. Suggested JUnit 5 Code
+4. Risks Or Assumptions
+
+Do not modify production code. Do not claim tests were executed.
+"""
+
+
 def write_prepare_artifacts(summary, target, scope, changed_class_names):
     REPORT_DIR.mkdir(exist_ok=True)
     PROMPT_FILE.write_text(build_prompt(target), encoding="utf-8")
@@ -250,6 +269,37 @@ def write_prepare_artifacts(summary, target, scope, changed_class_names):
         "",
     ])
     INSTRUCTIONS_FILE.write_text("\n".join(instructions), encoding="utf-8")
+
+
+def write_llm_suggestions_artifact(summary, target, scope, changed_class_names, suggestions):
+    REPORT_DIR.mkdir(exist_ok=True)
+    LLM_SUGGESTIONS_FILE.write_text("\n".join([
+        "# LLM Unit Test Suggestions",
+        "",
+        "This report was generated in suggest-only mode. No source or test files were changed automatically.",
+        "",
+        "## Selected Target",
+        "",
+        f"- Scope: `{scope}`",
+        f"- Class: `{target['class_name']}`",
+        f"- Source: `{target['source']}`",
+        f"- Test: `{target['test']}`",
+        f"- Current overall line coverage: {percent(summary['line'])}",
+        f"- Current overall branch coverage: {percent(summary['branch'])}",
+        "",
+        "## Changed Classes Considered",
+        "",
+        *(
+            [f"- `{class_name}`" for class_name in changed_class_names]
+            if changed_class_names
+            else ["- None detected; the agent fell back to all covered classes."]
+        ),
+        "",
+        "## Model Suggestions",
+        "",
+        suggestions,
+        "",
+    ]), encoding="utf-8")
 
 
 def write_verify_artifact(before, after_summary, after_target):
@@ -303,6 +353,19 @@ def prepare(scope, base_ref):
     print(f"Wrote {SNAPSHOT_FILE}")
 
 
+def suggest(scope, base_ref):
+    run(["./mvnw", "test"])
+    summary, weakest = load_coverage()
+    target, changed_class_names = select_target(weakest, scope, base_ref)
+    prompt = build_suggestion_prompt(target)
+    PROMPT_FILE.write_text(prompt, encoding="utf-8")
+    suggestions = chat_completion(prompt)
+    write_llm_suggestions_artifact(summary, target, scope, changed_class_names, suggestions)
+    run(["python3", "scripts/coverage_summary.py"])
+    print(f"Wrote {PROMPT_FILE}")
+    print(f"Wrote {LLM_SUGGESTIONS_FILE}")
+
+
 def verify():
     if not SNAPSHOT_FILE.exists():
         raise SystemExit(f"Before snapshot not found: {SNAPSHOT_FILE}. Run prepare phase first.")
@@ -317,16 +380,20 @@ def verify():
 
 def main():
     parser = argparse.ArgumentParser(description="Agentic unit test coverage optimizer")
-    parser.add_argument("--mode", choices=["manual"], default="manual")
-    parser.add_argument("--phase", choices=["prepare", "verify"], default="prepare")
+    parser.add_argument("--mode", choices=["manual", "llm"], default="manual")
+    parser.add_argument("--phase", choices=["prepare", "suggest", "verify"], default="prepare")
     parser.add_argument("--scope", choices=["all", "changed"], default="all")
     parser.add_argument("--base-ref", default=None)
     args = parser.parse_args()
 
-    if args.phase == "prepare":
+    if args.mode == "llm" and args.phase == "suggest":
+        suggest(args.scope, args.base_ref)
+    elif args.phase == "prepare":
         prepare(args.scope, args.base_ref)
-    else:
+    elif args.phase == "verify":
         verify()
+    else:
+        raise SystemExit("Use --phase suggest with --mode llm, or use manual prepare/verify.")
 
 
 if __name__ == "__main__":

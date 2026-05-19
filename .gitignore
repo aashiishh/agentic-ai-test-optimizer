@@ -3,6 +3,8 @@ target/
 .vscode/
 *.iml
 .DS_Store
+__pycache__/
+*.pyc
 Program.cs
 ai-test-reports/*.pdf
 ai-test-reports/*.html
@@ -10,3 +12,4 @@ ai-test-reports/manual-agent-before.json
 ai-test-reports/github-actions-summary.md
 ai-test-reports/manual-agent-instructions.md
 ai-test-reports/manual-agent-result.md
+ai-test-reports/llm-test-suggestions.md
