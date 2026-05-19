@@ -24,25 +24,36 @@ def find_metric(content, label):
     return match.group(1).strip() if match else "N/A"
 
 
-def load_target():
+def load_agent_snapshot():
     if BEFORE_SNAPSHOT.exists():
         data = json.loads(BEFORE_SNAPSHOT.read_text(encoding="utf-8"))
-        return data.get("target", {})
+        return {
+            "target": data.get("target", {}),
+            "scope": data.get("scope", "all"),
+            "changed_classes": data.get("changed_classes", []),
+        }
 
     instructions = read_text(MANUAL_INSTRUCTIONS)
     class_match = re.search(r"- Class: `(.+)`", instructions)
     source_match = re.search(r"- Source: `(.+)`", instructions)
     test_match = re.search(r"- Test: `(.+)`", instructions)
     return {
-        "class_name": class_match.group(1) if class_match else "N/A",
-        "source": source_match.group(1) if source_match else "N/A",
-        "test": test_match.group(1) if test_match else "N/A",
+        "target": {
+            "class_name": class_match.group(1) if class_match else "N/A",
+            "source": source_match.group(1) if source_match else "N/A",
+            "test": test_match.group(1) if test_match else "N/A",
+        },
+        "scope": "all",
+        "changed_classes": [],
     }
 
 
 def build_summary():
     coverage = read_text(COVERAGE_SUMMARY)
-    target = load_target()
+    snapshot = load_agent_snapshot()
+    target = snapshot["target"]
+    changed_classes = snapshot["changed_classes"]
+    changed_class_text = ", ".join(f"`{class_name}`" for class_name in changed_classes) or "None detected; fallback target used."
 
     line = find_metric(coverage, "Line coverage")
     branch = find_metric(coverage, "Branch coverage")
@@ -59,9 +70,11 @@ def build_summary():
         "",
         "## Selected AI Target",
         "",
+        f"- Scope: `{snapshot['scope']}`",
         f"- Class: `{target.get('class_name', 'N/A')}`",
         f"- Source: `{target.get('source', 'N/A')}`",
         f"- Test: `{target.get('test', 'N/A')}`",
+        f"- Changed classes considered: {changed_class_text}",
         "",
         "## Generated Artifacts",
         "",

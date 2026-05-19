@@ -14,6 +14,8 @@ jobs:
     steps:
       - name: Checkout repository
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - name: Set up Java
         uses: actions/setup-java@v4
@@ -25,8 +27,18 @@ jobs:
       - name: Run tests and JaCoCo report
         run: ./mvnw test
 
+      - name: Determine coverage comparison base
+        id: coverage-base
+        shell: bash
+        run: |
+          if [ "${{ github.event_name }}" = "pull_request" ]; then
+            echo "base_ref=${{ github.event.pull_request.base.sha }}" >> "$GITHUB_OUTPUT"
+          else
+            echo "base_ref=${{ github.event.before }}" >> "$GITHUB_OUTPUT"
+          fi
+
       - name: Run manual AI agent prepare phase
-        run: python3 scripts/ai_test_agent.py --mode manual --phase prepare
+        run: python3 scripts/ai_test_agent.py --mode manual --phase prepare --scope changed --base-ref "${{ steps.coverage-base.outputs.base_ref }}"
 
       - name: Publish GitHub Actions summary
         run: python3 scripts/github_summary.py

@@ -3,6 +3,7 @@ import argparse
 import csv
 import json
 import subprocess
+import sys
 from pathlib import Path
 
 
@@ -36,12 +37,30 @@ def run(command):
     subprocess.run(command, check=True)
 
 
+def capture(command):
+    result = subprocess.run(command, check=True, capture_output=True, text=True)
+    return result.stdout.strip()
+
+
 def class_to_source_path(class_name):
     return Path("src/main/java") / Path(*class_name.split(".")).with_suffix(".java")
 
 
 def class_to_test_path(class_name):
     return Path("src/test/java") / Path(*f"{class_name}Test".split(".")).with_suffix(".java")
+
+
+def source_path_to_class_name(path):
+    source_root = Path("src/main/java")
+    try:
+        relative = Path(path).relative_to(source_root)
+    except ValueError:
+        return None
+
+    if relative.suffix != ".java":
+        return None
+
+    return ".".join(relative.with_suffix("").parts)
 
 
 def read_text(path):
@@ -99,6 +118,48 @@ def load_coverage():
     return summary, weakest
 
 
+def get_changed_class_names(base_ref):
+    commands = []
+    if base_ref and not set(base_ref) == {"0"}:
+        commands.append(["git", "diff", "--name-only", f"{base_ref}...HEAD"])
+        commands.append(["git", "diff", "--name-only", base_ref, "HEAD"])
+
+    commands.append(["git", "diff", "--name-only", "HEAD~1", "HEAD"])
+
+    for command in commands:
+        try:
+            output = capture(command)
+        except subprocess.CalledProcessError:
+            continue
+
+        class_names = {
+            class_name
+            for line in output.splitlines()
+            if (class_name := source_path_to_class_name(line))
+        }
+        if class_names:
+            return class_names
+
+    return set()
+
+
+def select_target(weakest, scope, base_ref):
+    if scope == "all":
+        return weakest[0], []
+
+    changed_class_names = get_changed_class_names(base_ref)
+    changed_targets = [
+        item for item in weakest
+        if item["class_name"] in changed_class_names
+    ]
+
+    if changed_targets:
+        return changed_targets[0], sorted(changed_class_names)
+
+    print("No changed covered Java classes found; falling back to all covered classes.", file=sys.stderr)
+    return weakest[0], sorted(changed_class_names)
+
+
 def build_prompt(target):
     source_path = Path(target["source"])
     test_path = Path(target["test"])
@@ -142,12 +203,14 @@ Generate or improve JUnit 5 tests for the target class so that line and branch c
 """
 
 
-def write_prepare_artifacts(summary, target):
+def write_prepare_artifacts(summary, target, scope, changed_class_names):
     REPORT_DIR.mkdir(exist_ok=True)
     PROMPT_FILE.write_text(build_prompt(target), encoding="utf-8")
     SNAPSHOT_FILE.write_text(json.dumps({
         "summary": summary,
         "target": target,
+        "scope": scope,
+        "changed_classes": changed_class_names,
     }, indent=2), encoding="utf-8")
 
     instructions = [
@@ -157,11 +220,23 @@ def write_prepare_artifacts(summary, target):
         "",
         "## Selected Target",
         "",
+        f"- Scope: `{scope}`",
         f"- Class: `{target['class_name']}`",
         f"- Source: `{target['source']}`",
         f"- Test: `{target['test']}`",
         f"- Line coverage: {percent(target['line'])}",
         f"- Branch coverage: {percent(target['branch'])}",
+        "",
+        "## Changed Classes Considered",
+        "",
+    ]
+
+    if changed_class_names:
+        instructions.extend(f"- `{class_name}`" for class_name in changed_class_names)
+    else:
+        instructions.append("- None detected; the agent fell back to all covered classes.")
+
+    instructions.extend([
         "",
         "## Manual Steps",
         "",
@@ -171,7 +246,7 @@ def write_prepare_artifacts(summary, target):
         "4. Run `python3 scripts/ai_test_agent.py --mode manual --phase verify`.",
         "5. Review `ai-test-reports/manual-agent-result.md`.",
         "",
-    ]
+    ])
     INSTRUCTIONS_FILE.write_text("\n".join(instructions), encoding="utf-8")
 
 
@@ -215,10 +290,11 @@ def write_verify_artifact(before, after_summary, after_target):
     RESULT_FILE.write_text("\n".join(result), encoding="utf-8")
 
 
-def prepare():
+def prepare(scope, base_ref):
     run(["./mvnw", "test"])
     summary, weakest = load_coverage()
-    write_prepare_artifacts(summary, weakest[0])
+    target, changed_class_names = select_target(weakest, scope, base_ref)
+    write_prepare_artifacts(summary, target, scope, changed_class_names)
     run(["python3", "scripts/coverage_summary.py"])
     print(f"Wrote {PROMPT_FILE}")
     print(f"Wrote {INSTRUCTIONS_FILE}")
@@ -241,10 +317,12 @@ def main():
     parser = argparse.ArgumentParser(description="Agentic unit test coverage optimizer")
     parser.add_argument("--mode", choices=["manual"], default="manual")
     parser.add_argument("--phase", choices=["prepare", "verify"], default="prepare")
+    parser.add_argument("--scope", choices=["all", "changed"], default="all")
+    parser.add_argument("--base-ref", default=None)
     args = parser.parse_args()
 
     if args.phase == "prepare":
-        prepare()
+        prepare(args.scope, args.base_ref)
     else:
         verify()
 

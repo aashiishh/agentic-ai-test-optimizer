@@ -72,6 +72,12 @@ Prepare the prompt for ChatGPT Pro:
 python3 scripts/ai_test_agent.py --mode manual --phase prepare
 ```
 
+Prefer changed production classes when Git history is available:
+
+```bash
+python3 scripts/ai_test_agent.py --mode manual --phase prepare --scope changed --base-ref HEAD~1
+```
+
 After adding the generated tests, verify coverage improvement:
 
 ```bash
